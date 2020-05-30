@@ -7,7 +7,6 @@ Collecting data from Modbus TCP slaves
 ### Prerequisites
 pyserial
 modbus-tk
-paho-mqtt
 mysql.connector
 
 ### Installation
@@ -35,14 +34,6 @@ Either reboot, or start the services manually:
 ```bash
     $ sudo systemctl start myems-modbus-tcp.service
 ```
-
-### MQTT Topic
-
-myems/point/{point_id}
-Example:
-myems/point/4088
-result payload:
-{"point_id": 4088, "value": 20.09375, "data_source_id": 241}
 
 ### Add Data Sources and Points to database
 
@@ -113,9 +104,7 @@ Whitespace between formats is ignored.
 
 
 ### References
-  1. http://www.modbus.org/tech.php
-  2. https://github.com/ljean/modbus-tk
-  3. https://github.com/owagner/modbus2mqtt
-  4. http://mqtt.org/
-
+  [1]. http://myems.io
+  [2]. http://www.modbus.org/tech.php
+  [3]. https://github.com/ljean/modbus-tk
 
