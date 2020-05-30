@@ -12,12 +12,6 @@ myems_historical_db = {
     'database': 'myems_historical_db',
 }
 
-myems_mqtt_broker = {
-    'host': '192.168.0.1',
-    'port': 1883,
-    'username': 'admin',
-    'password': 'Password1',
-}
 
 periods = {
     'save_to_database': 60,

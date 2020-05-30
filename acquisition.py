@@ -1,46 +1,19 @@
 import json
 import mysql.connector
-import config
-from modbus_tk import modbus_tcp
 import time
-from datetime import datetime
-import paho.mqtt.client as mqtt
 import math
+from datetime import datetime
 import telnetlib
-
-
-# global flag indicates the connectivity with the MQTT broker
-mqtt_connected_flag = False
-
-
-# the on_connect callback function for MQTT client
-# refer to http://www.steves-internet-guide.com/client-connections-python-mqtt/
-def on_mqtt_connect(client, userdata, flags, rc):
-    global mqtt_connected_flag
-    if rc == 0:
-        mqtt_connected_flag = True  # set flag
-        print("MQTT connected OK")
-    else:
-        print("Bad MQTT connection Returned code=", rc)
-        mqtt_connected_flag = False
-
-
-# the on_disconnect callback function for MQTT client
-# refer to http://www.steves-internet-guide.com/client-connections-python-mqtt/
-def on_mqtt_disconnect(client, userdata, rc=0):
-    global mqtt_connected_flag
-
-    print("DisConnected, result code "+str(rc))
-    mqtt_connected_flag = False
+from modbus_tk import modbus_tcp
+import config
 
 
 ########################################################################################################################
 # Acquisition Procedures
 # Step 1: telnet hosts
 # Step 2: Get point list
-# Step 3: Read point values from MODBUS slaves
-# Step 4: Publish point values to MQTT
-# Step 5: Bulk insert point values into historical database
+# Step 3: Read point values from Modbus slaves
+# Step 4: Bulk insert point values into historical database
 ########################################################################################################################
 
 
@@ -114,7 +87,7 @@ def process(logger, data_source_id, host, port):
                                "address": row_point[5]})
 
         ################################################################################################################
-        # Step 3: Read point values from MODBUS slaves
+        # Step 3: Read point values from Modbus slaves
         ################################################################################################################
         # connect to historical database
         cnx_historical_db = None
@@ -131,22 +104,6 @@ def process(logger, data_source_id, host, port):
             # sleep 60 seconds and go back to the begin of outermost while loop to reload points
             time.sleep(60)
             continue
-
-        # connect to the mqtt broker for publishing real time data
-        mqc = None
-        try:
-            mqc = mqtt.Client(client_id=str(data_source_id) + "-" + str(time.time()))
-            mqc.username_pw_set(config.myems_mqtt_broker['username'], config.myems_mqtt_broker['password'])
-            mqc.on_connect = on_mqtt_connect
-            mqc.on_disconnect = on_mqtt_disconnect
-            mqc.connect_async(config.myems_mqtt_broker['host'], config.myems_mqtt_broker['port'], 60)
-            # The loop_start() starts a new thread, that calls the loop method at regular intervals for you.
-            # It also handles re-connects automatically.
-            mqc.loop_start()
-        except Exception as e:
-            logger.error("MQTT Client Connection error " + str(e))
-            # ignore this exception, does not stop the procedure
-            pass
 
         # connect to the Modbus data source
         master = modbus_tcp.TcpMaster(host=host, port=port, timeout_in_sec=5.0)
@@ -246,14 +203,10 @@ def process(logger, data_source_id, host, port):
             # end of foreach point loop
 
             if is_modbus_tcp_timed_out:
-                # modbus TCP connection timeout error
+                # Modbus TCP connection timeout error
 
-                # destroy the modbus master
+                # destroy the Modbus master
                 del master
-
-                # destroy mqtt client
-                mqc.disconnect()
-                del mqc
 
                 # close the connection to database
                 if cursor_historical_db:
@@ -261,63 +214,9 @@ def process(logger, data_source_id, host, port):
                 if cnx_historical_db:
                     cnx_historical_db.close()
 
-                # break the inner while loop to reconnect the modbus device
+                # break the inner while loop to reconnect the Modbus device
                 time.sleep(60)
                 break
-
-            ############################################################################################################
-            # Step 4: Publish point values to MQTT
-            ############################################################################################################
-            if len(analog_value_list) > 0 and mqtt_connected_flag:
-                for point_value in analog_value_list:
-                    try:
-                        # publish real time value to mqtt broker
-                        payload = json.dumps({"data_source_id": point_value['data_source_id'],
-                                              "point_id": point_value['point_id'],
-                                              "value": point_value['value']})
-                        print('payload=' + str(payload))
-                        info = mqc.publish('myems/point/' + str(point_value['point_id']),
-                                           payload=payload,
-                                           qos=0,
-                                           retain=True)
-                    except Exception as e:
-                        logger.error("MQTT Publish Error in step 4 of acquisition process: " + str(e))
-                        # ignore this exception, does not stop the procedure
-                        pass
-
-            if len(energy_value_list) > 0 and mqtt_connected_flag:
-                for point_value in energy_value_list:
-                    try:
-                        # publish real time value to mqtt broker
-                        payload = json.dumps({"data_source_id": point_value['data_source_id'],
-                                              "point_id": point_value['point_id'],
-                                              "value": point_value['value']})
-                        print('payload=' + str(payload))
-                        info = mqc.publish('myems/point/' + str(point_value['point_id']),
-                                           payload=payload,
-                                           qos=0,
-                                           retain=True)
-                    except Exception as e:
-                        logger.error("MQTT Publish Error in step 4 of acquisition process: " + str(e))
-                        # ignore this exception, does not stop the procedure
-                        pass
-
-            if len(digital_value_list) > 0 and mqtt_connected_flag:
-                for point_value in digital_value_list:
-                    try:
-                        # publish real time value to mqtt broker
-                        payload = json.dumps({"data_source_id": point_value['data_source_id'],
-                                              "point_id": point_value['point_id'],
-                                              "value": point_value['value']})
-                        print('payload=' + str(payload))
-                        info = mqc.publish('myems/point/' + str(point_value['point_id']),
-                                           payload=payload,
-                                           qos=0,
-                                           retain=True)
-                    except Exception as e:
-                        logger.error("MQTT Publish Error in step 4 of acquisition process: " + str(e))
-                        # ignore this exception, does not stop the procedure
-                        pass
 
             ############################################################################################################
             # Step 5: Bulk insert point values into historical database
@@ -358,11 +257,7 @@ def process(logger, data_source_id, host, port):
                         cnx_historical_db.commit()
 
                     except Exception as e:
-                        logger.error("Error in step 5.2 of acquisition process: " +
-                                     "Data Source ID=%s, Point ID=%s Error: %s",
-                                     (point_value['data_source_id'],
-                                      point_value['point_id'],
-                                      str(e)))
+                        logger.error("Error in step 5.2 of acquisition process " + str(e))
                         # ignore this exception
                         pass
 
@@ -384,11 +279,7 @@ def process(logger, data_source_id, host, port):
                         cursor_historical_db.execute(add_values[:-2])
                         cnx_historical_db.commit()
                     except Exception as e:
-                        logger.error("Error in step 5.3 of acquisition process: " +
-                                     "Data Source ID=%s, Point ID=%s Error: %s",
-                                     (point_value['data_source_id'],
-                                      point_value['point_id'],
-                                      str(e)))
+                        logger.error("Error in step 5.3 of acquisition process: " + str(e))
                         # ignore this exception
                         pass
 
@@ -410,11 +301,7 @@ def process(logger, data_source_id, host, port):
                         cursor_historical_db.execute(add_values[:-2])
                         cnx_historical_db.commit()
                     except Exception as e:
-                        logger.error("Error in step 5.4 of acquisition process: " +
-                                     "Data Source ID=%s, Point ID=%s Error: %s",
-                                     (point_value['data_source_id'],
-                                      point_value['point_id'],
-                                      str(e)))
+                        logger.error("Error in step 5.4 of acquisition process: " + str(e))
                         # ignore this exception
                         pass
 
