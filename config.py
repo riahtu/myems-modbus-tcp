@@ -13,6 +13,4 @@ myems_historical_db = {
 }
 
 
-periods = {
-    'save_to_database': 60,
-}
+period_in_seconds = 60

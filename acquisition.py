@@ -238,6 +238,7 @@ def process(logger, data_source_id, host, port):
 
             current_datetime_utc = datetime.utcnow()
             # bulk insert values into historical database within a period
+            # update latest values in the meanwhile
             if len(analog_value_list) > 0:
                 add_values = (" INSERT INTO tbl_analog_value (point_id, utc_date_time, actual_value) "
                               " VALUES  ")
@@ -255,9 +256,41 @@ def process(logger, data_source_id, host, port):
                         # trim ", " at the end of string and then execute
                         cursor_historical_db.execute(add_values[:-2])
                         cnx_historical_db.commit()
-
                     except Exception as e:
-                        logger.error("Error in step 5.2 of acquisition process " + str(e))
+                        logger.error("Error in step 5.2.1 of acquisition process " + str(e))
+                        # ignore this exception
+                        pass
+
+                # update tbl_analog_value_latest
+                delete_values = " DELETE FROM tbl_analog_value_latest WHERE point_id IN ( "
+                latest_values = (" INSERT INTO tbl_analog_value (point_id, utc_date_time, actual_value) "
+                                 " VALUES  ")
+                latest_value_count = 0
+
+                for point_value in analog_value_list:
+                    if isinstance(point_value['value'], float):
+                        delete_values += str(point_value['point_id']) + ","
+                        latest_values += " (" + str(point_value['point_id']) + ","
+                        latest_values += "'" + current_datetime_utc.isoformat() + "',"
+                        latest_values += str(point_value['value']) + "), "
+                        latest_value_count += 1
+
+                if latest_value_count > 0:
+                    try:
+                        # replace "," at the end of string with ")"
+                        cursor_historical_db.execute(delete_values[:-1] + ")")
+                        cnx_historical_db.commit()
+                    except Exception as e:
+                        logger.error("Error in step 5.2.2 of acquisition process " + str(e))
+                        # ignore this exception
+                        pass
+
+                    try:
+                        # trim ", " at the end of string and then execute
+                        cursor_historical_db.execute(latest_values[:-2])
+                        cnx_historical_db.commit()
+                    except Exception as e:
+                        logger.error("Error in step 5.2.3 of acquisition process " + str(e))
                         # ignore this exception
                         pass
 
@@ -279,7 +312,42 @@ def process(logger, data_source_id, host, port):
                         cursor_historical_db.execute(add_values[:-2])
                         cnx_historical_db.commit()
                     except Exception as e:
-                        logger.error("Error in step 5.3 of acquisition process: " + str(e))
+                        logger.error("Error in step 5.3.1 of acquisition process: " + str(e))
+                        # ignore this exception
+                        pass
+
+                # update tbl_energy_value_latest
+                delete_values = " DELETE FROM tbl_energy_value_latest WHERE point_id IN ( "
+                latest_values = (" INSERT INTO tbl_energy_value_latest (point_id, utc_date_time, actual_value) "
+                                 " VALUES  ")
+
+                latest_value_count = 0
+                for point_value in energy_value_list:
+                    if isinstance(point_value['value'], float):
+                        delete_values += str(point_value['point_id']) + ","
+                        latest_values += " (" + str(point_value['point_id']) + ","
+                        latest_values += "'" + current_datetime_utc.isoformat() + "',"
+                        latest_values += str(point_value['value']) + "), "
+                        latest_value_count += 1
+
+                if latest_value_count > 0:
+                    try:
+                        # replace "," at the end of string with ")"
+                        cursor_historical_db.execute(delete_values[:-1] + ")")
+                        cnx_historical_db.commit()
+
+                    except Exception as e:
+                        logger.error("Error in step 5.3.2 of acquisition process " + str(e))
+                        # ignore this exception
+                        pass
+
+                    try:
+                        # trim ", " at the end of string and then execute
+                        cursor_historical_db.execute(latest_values[:-2])
+                        cnx_historical_db.commit()
+
+                    except Exception as e:
+                        logger.error("Error in step 5.3.3 of acquisition process " + str(e))
                         # ignore this exception
                         pass
 
@@ -301,12 +369,44 @@ def process(logger, data_source_id, host, port):
                         cursor_historical_db.execute(add_values[:-2])
                         cnx_historical_db.commit()
                     except Exception as e:
-                        logger.error("Error in step 5.4 of acquisition process: " + str(e))
+                        logger.error("Error in step 5.4.1 of acquisition process: " + str(e))
+                        # ignore this exception
+                        pass
+
+                # update tbl_digital_value_latest
+                delete_values = " DELETE FROM tbl_digital_value_latest WHERE point_id IN ( "
+                latest_values = (" INSERT INTO tbl_digital_value_latest (point_id, utc_date_time, actual_value) "
+                                 " VALUES  ")
+                latest_value_count = 0
+                for point_value in digital_value_list:
+                    if isinstance(point_value['value'], int):
+                        delete_values += str(point_value['point_id']) + ","
+                        latest_values += " (" + str(point_value['point_id']) + ","
+                        latest_values += "'" + current_datetime_utc.isoformat() + "',"
+                        latest_values += str(point_value['value']) + "), "
+                        latest_value_count += 1
+
+                if latest_value_count > 0:
+                    try:
+                        # replace "," at the end of string with ")"
+                        cursor_historical_db.execute(delete_values[:-1] + ")")
+                        cnx_historical_db.commit()
+                    except Exception as e:
+                        logger.error("Error in step 5.4.2 of acquisition process " + str(e))
+                        # ignore this exception
+                        pass
+
+                    try:
+                        # trim ", " at the end of string and then execute
+                        cursor_historical_db.execute(latest_values[:-2])
+                        cnx_historical_db.commit()
+                    except Exception as e:
+                        logger.error("Error in step 5.4.3 of acquisition process " + str(e))
                         # ignore this exception
                         pass
 
             # sleep some seconds
-            time.sleep(config.periods['save_to_database'])
+            time.sleep(config.period_in_seconds)
 
         # end of inner while loop
 
