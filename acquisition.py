@@ -13,7 +13,7 @@ import config
 # Step 1: telnet hosts
 # Step 2: Get point list
 # Step 3: Read point values from Modbus slaves
-# Step 4: Bulk insert point values into historical database
+# Step 4: Bulk insert point values and update latest value in historical database
 ########################################################################################################################
 
 
@@ -219,7 +219,7 @@ def process(logger, data_source_id, host, port):
                 break
 
             ############################################################################################################
-            # Step 5: Bulk insert point values into historical database
+            # Step 4: Bulk insert point values into historical database
             ############################################################################################################
             # check the connection to the Historical Database
             if not cnx_historical_db.is_connected():
@@ -227,7 +227,7 @@ def process(logger, data_source_id, host, port):
                     cnx_historical_db = mysql.connector.connect(**config.myems_historical_db)
                     cursor_historical_db = cnx_historical_db.cursor()
                 except Exception as e:
-                    logger.error("Error in step 5.1 of acquisition process: " + str(e))
+                    logger.error("Error in step 4.1 of acquisition process: " + str(e))
                     if cursor_historical_db:
                         cursor_historical_db.close()
                     if cnx_historical_db:
@@ -257,7 +257,7 @@ def process(logger, data_source_id, host, port):
                         cursor_historical_db.execute(add_values[:-2])
                         cnx_historical_db.commit()
                     except Exception as e:
-                        logger.error("Error in step 5.2.1 of acquisition process " + str(e))
+                        logger.error("Error in step 4.2.1 of acquisition process " + str(e))
                         # ignore this exception
                         pass
 
@@ -281,7 +281,7 @@ def process(logger, data_source_id, host, port):
                         cursor_historical_db.execute(delete_values[:-1] + ")")
                         cnx_historical_db.commit()
                     except Exception as e:
-                        logger.error("Error in step 5.2.2 of acquisition process " + str(e))
+                        logger.error("Error in step 4.2.2 of acquisition process " + str(e))
                         # ignore this exception
                         pass
 
@@ -290,7 +290,7 @@ def process(logger, data_source_id, host, port):
                         cursor_historical_db.execute(latest_values[:-2])
                         cnx_historical_db.commit()
                     except Exception as e:
-                        logger.error("Error in step 5.2.3 of acquisition process " + str(e))
+                        logger.error("Error in step 4.2.3 of acquisition process " + str(e))
                         # ignore this exception
                         pass
 
@@ -312,7 +312,7 @@ def process(logger, data_source_id, host, port):
                         cursor_historical_db.execute(add_values[:-2])
                         cnx_historical_db.commit()
                     except Exception as e:
-                        logger.error("Error in step 5.3.1 of acquisition process: " + str(e))
+                        logger.error("Error in step 4.3.1 of acquisition process: " + str(e))
                         # ignore this exception
                         pass
 
@@ -337,7 +337,7 @@ def process(logger, data_source_id, host, port):
                         cnx_historical_db.commit()
 
                     except Exception as e:
-                        logger.error("Error in step 5.3.2 of acquisition process " + str(e))
+                        logger.error("Error in step 4.3.2 of acquisition process " + str(e))
                         # ignore this exception
                         pass
 
@@ -347,7 +347,7 @@ def process(logger, data_source_id, host, port):
                         cnx_historical_db.commit()
 
                     except Exception as e:
-                        logger.error("Error in step 5.3.3 of acquisition process " + str(e))
+                        logger.error("Error in step 4.3.3 of acquisition process " + str(e))
                         # ignore this exception
                         pass
 
@@ -369,7 +369,7 @@ def process(logger, data_source_id, host, port):
                         cursor_historical_db.execute(add_values[:-2])
                         cnx_historical_db.commit()
                     except Exception as e:
-                        logger.error("Error in step 5.4.1 of acquisition process: " + str(e))
+                        logger.error("Error in step 4.4.1 of acquisition process: " + str(e))
                         # ignore this exception
                         pass
 
@@ -392,7 +392,7 @@ def process(logger, data_source_id, host, port):
                         cursor_historical_db.execute(delete_values[:-1] + ")")
                         cnx_historical_db.commit()
                     except Exception as e:
-                        logger.error("Error in step 5.4.2 of acquisition process " + str(e))
+                        logger.error("Error in step 4.4.2 of acquisition process " + str(e))
                         # ignore this exception
                         pass
 
@@ -401,7 +401,7 @@ def process(logger, data_source_id, host, port):
                         cursor_historical_db.execute(latest_values[:-2])
                         cnx_historical_db.commit()
                     except Exception as e:
-                        logger.error("Error in step 5.4.3 of acquisition process " + str(e))
+                        logger.error("Error in step 4.4.3 of acquisition process " + str(e))
                         # ignore this exception
                         pass
 
