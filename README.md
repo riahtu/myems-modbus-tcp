@@ -1,36 +1,61 @@
 ## MyEMS Modbus TCP Service
 
 ###Introduction
-Collecting data from Modbus TCP slaves
+This service is a component of MyEMS to acquire data from Modbus TCP devices.
+
 
 
 ### Prerequisites
 pyserial
+
 modbus-tk
+
 mysql.connector
 
 ### Installation
-Install myems-modbus-tcp
+
+Download and install MySQL Connector:
+```
+    $ cd ~/tools
+    $ wget https://dev.mysql.com/get/Downloads/Connector-Python/mysql-connector-python-8.0.20.tar.gz
+    $ tar xzf mysql-connector-python-8.0.20.tar.gz
+    $ cd ~/tools/mysql-connector-python-8.0.20
+    $ sudo python3 setup.py install
+```
+
+Download and install modbus-tk
+```
+    $ cd ~/tools
+    $ git clone https://github.com/pyserial/pyserial.git
+    $ cd ~/tools/pyserial
+    $ sudo python3 setup.py install
+    $ git clone https://github.com/ljean/modbus-tk.git
+    $ cd ~/tools/modbus-tk
+    $ sudo python3 setup.py install
+
+```
+
+Install myems-modbus-tcp service
 ```bash
     $ cd ~
     $ git clone https://github.com/myems/myesm-modbus-tcp.git
     $ sudo cp -R ~/myems-modbus-tcp /myems-modbus-tcp
     $ cd /myems-modbus-tcp
-    $ sudo git checkout develop (or the release tag)
+    $ sudo git checkout master (or the release tag)
 ```
 Open config file and edit database configuration
 ```bash
     $ sudo nano config.py
 ```
-Setup systemd configure files:
+Setup systemd service:
 ```bash
     $ sudo cp myems-modbus-tcp.service /lib/systemd/system/
 ```
-Next enable the services so they autostart at boot:
+Enable the service:
 ```bash
     $ sudo systemctl enable myems-modbus-tcp.service
 ```
-Either reboot, or start the services manually:
+Start the service:
 ```bash
     $ sudo systemctl start myems-modbus-tcp.service
 ```
@@ -56,7 +81,8 @@ VALUES
 
 ```
 
-* Address | format
+### Address 
+#### format
 Functions to convert between Python values and C structs.
 Python bytes objects are used to hold the data representing the C struct
 and also as format strings (explained below) to describe the layout of data in the C struct.
@@ -86,20 +112,20 @@ Special case (not in native mode unless 'long long' in platform C):
 
 Whitespace between formats is ignored.
 
-* Address | function_code
+####function_code
     01 (0x01) Read Coils
     02 (0x02) Read Discrete Inputs
     03 (0x03) Read Holding Registers
     04 (0x04) Read Input Registers
     23 (0x17) Read/Write Multiple registers
 
-* Address | number_of_registers
+####number_of_registers
     The number of registers specified in the Request PDU
 
-* Address | offset
+####offset
     The starting register address specified in the Request PDU
 
-* Address | slave_id
+####slave_id
     The slave ID
 
 

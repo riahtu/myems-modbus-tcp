@@ -219,7 +219,7 @@ def process(logger, data_source_id, host, port):
                 break
 
             ############################################################################################################
-            # Step 4: Bulk insert point values into historical database
+            # Step 4: Bulk insert point values and update latest value in historical database
             ############################################################################################################
             # check the connection to the Historical Database
             if not cnx_historical_db.is_connected():
