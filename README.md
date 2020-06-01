@@ -1,6 +1,6 @@
 ## MyEMS Modbus TCP Service
 
-###Introduction
+### Introduction
 This service is a component of MyEMS to acquire data from Modbus TCP devices.
 
 
@@ -112,25 +112,27 @@ Special case (not in native mode unless 'long long' in platform C):
 
 Whitespace between formats is ignored.
 
-####function_code
+#### function_code
     01 (0x01) Read Coils
     02 (0x02) Read Discrete Inputs
     03 (0x03) Read Holding Registers
     04 (0x04) Read Input Registers
     23 (0x17) Read/Write Multiple registers
 
-####number_of_registers
+#### number_of_registers
     The number of registers specified in the Request PDU
 
-####offset
+#### offset
     The starting register address specified in the Request PDU
 
-####slave_id
+#### slave_id
     The slave ID
 
 
 ### References
   [1]. http://myems.io
+  
   [2]. http://www.modbus.org/tech.php
+  
   [3]. https://github.com/ljean/modbus-tk
 
