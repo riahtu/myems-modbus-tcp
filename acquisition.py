@@ -6,6 +6,7 @@ from datetime import datetime
 import telnetlib
 from modbus_tk import modbus_tcp
 import config
+from decimal import Decimal
 
 
 ########################################################################################################################
@@ -13,7 +14,7 @@ import config
 # Step 1: telnet hosts
 # Step 2: Get point list
 # Step 3: Read point values from Modbus slaves
-# Step 4: Bulk insert point values and update latest value in historical database
+# Step 4: Bulk insert point values and update latest values in historical database
 ########################################################################################################################
 
 
@@ -181,24 +182,22 @@ def process(logger, data_source_id, host, port):
                     continue
 
                 value = result[0]
-                if point['ratio'] is not None and isinstance(point['ratio'], float):
-                    value *= point['ratio']
 
                 if point['object_type'] == 'ANALOG_VALUE':
                     analog_value_list.append({'data_source_id': data_source_id,
                                               'point_id': point['id'],
                                               'is_trend': point['is_trend'],
-                                              'value': value})
+                                              'value': Decimal(value) * point['ratio']})
                 elif point['object_type'] == 'ENERGY_VALUE':
                     energy_value_list.append({'data_source_id': data_source_id,
                                               'point_id': point['id'],
                                               'is_trend': point['is_trend'],
-                                              'value': value})
+                                              'value': Decimal(value) * point['ratio']})
                 elif point['object_type'] == 'DIGITAL_VALUE':
                     digital_value_list.append({'data_source_id': data_source_id,
                                                'point_id': point['id'],
                                                'is_trend': point['is_trend'],
-                                               'value': value})
+                                               'value': int(value) * int(point['ratio'])})
 
             # end of foreach point loop
 
@@ -219,7 +218,7 @@ def process(logger, data_source_id, host, port):
                 break
 
             ############################################################################################################
-            # Step 4: Bulk insert point values and update latest value in historical database
+            # Step 4: Bulk insert point values and update latest values in historical database
             ############################################################################################################
             # check the connection to the Historical Database
             if not cnx_historical_db.is_connected():
