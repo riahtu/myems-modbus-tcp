@@ -36,49 +36,38 @@ Download and install modbus-tk
 ```
 
 Install myems-modbus-tcp service
-```bash
+```
     $ cd ~
     $ git clone https://github.com/myems/myesm-modbus-tcp.git
     $ sudo cp -R ~/myems-modbus-tcp /myems-modbus-tcp
     $ cd /myems-modbus-tcp
     $ sudo git checkout master (or the release tag)
 ```
-Open config file and edit database configuration
-```bash
-    $ sudo nano config.py
 ```
-Setup systemd service:
-```bash
-    $ sudo cp myems-modbus-tcp.service /lib/systemd/system/
+    $ cd ~
+    $ git clone https://github.com/myems/myems-modbus-tcp.git
+    $ sudo git checkout master (or the release tag)
+    $ sudo cp -R ~/myems-modbus-tcp /myems-modbus-tcp
 ```
-Enable the service:
-```bash
+    Eidt the config
+```
+    $ sudo nano /myems-modbus-tcp/config.py
+```
+    Setup systemd service:
+```
+    $ sudo cp /myems-modbus-tcp/myems-modbus-tcp.service /lib/systemd/system/
     $ sudo systemctl enable myems-modbus-tcp.service
-```
-Start the service:
-```bash
     $ sudo systemctl start myems-modbus-tcp.service
 ```
 
-### Add Data Sources and Points to database
 
-```bash
-INSERT INTO `tbl_data_sources`
-(`id`, `name`, `uuid`, `protocol`,  `connection`)
-VALUES
-(1,'Modbus Meter','e3a6ddcd-88e0-4857-818f-17db42461bd8','modbus-tcp',
- '{\"host\":\"192.168.0.100\",\"port\":502}');
+
+### Add Data Sources and Points in MyEMS Admin 
+refer to https://github.com/myems/myesm-admin.git
+
+NOTE: If you modified Modbus TCP datasources and points, please restart this service:
 ```
-
-```bash
-INSERT INTO `tbl_points`
-(`id`, `name`, `data_source_id`, `object_type`, `units`, `hi_limit`, `low_limit`, `is_trend`, `address`)
-VALUES
-(1,'线电压 Vb-c',1,'ANALOG_VALUE','V',690,0,0,
- '{\"format\":\">f\",\"function_code\":3,\"number_of_registers\":2,\"offset\":9,\"slave_id\":1}'),
-(2,'有功功率',1,'ENERGY_VALUE','Wh',99999999999,0,1,
- '{\"format\":\">d\",\"function_code\":3,\"number_of_registers\":4,\"offset\":801,\"slave_id\":1}');
-
+    $ sudo systemctl restart myems-modbus-tcp.service
 ```
 
 ### Address 
