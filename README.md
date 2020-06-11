@@ -70,6 +70,20 @@ NOTE: If you modified Modbus TCP datasources and points, please restart this ser
     $ sudo systemctl restart myems-modbus-tcp.service
 ```
 
+Input Data source protocol: 
+```
+modbus-tcp
+```
+Input data source connection (example):
+```
+{"host":"10.9.67.99","port":502}
+```
+
+Input point address (example):
+```
+{"format":">f","function_code":3,"number_of_registers":2,"offset":1,"slave_id":1}
+```
+
 ### Address 
 #### format
 Functions to convert between Python values and C structs.
