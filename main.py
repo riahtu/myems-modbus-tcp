@@ -44,11 +44,11 @@ def main():
             continue
 
         try:
-            query = (" SELECT id, name, connection "
-                     " FROM tbl_data_sources "
-                     " WHERE protocol = 'modbus-tcp' "
-                     " ORDER BY id ")
-            cursor_system_db.execute(query)
+            query = (" SELECT ds.id, ds.name, ds.connection "
+                     " FROM tbl_data_sources ds, tbl_gateways g "
+                     " WHERE ds.protocol = 'modbus-tcp' AND g.id = %s AND g.token = %s "
+                     " ORDER BY ds.id ")
+            cursor_system_db.execute(query, (config.gateway['id'], config.gateway['token'], ))
             rows_data_source = cursor_system_db.fetchall()
         except Exception as e:
             logger.error("Error in main process " + str(e))
