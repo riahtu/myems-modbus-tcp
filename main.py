@@ -71,7 +71,8 @@ def main():
             break
 
     for row_data_source in rows_data_source:
-        print("Data Source: ID=%s, Name=%s, Connection=%s ", row_data_source[0], row_data_source[1], row_data_source[2])
+        print("Data Source: ID=%s, Name=%s, Connection=%s " %
+              (row_data_source[0], row_data_source[1], row_data_source[2]))
 
         if row_data_source[2] is None or len(row_data_source[2]) == 0:
             logger.error("Data Source Connection Not Found.")
