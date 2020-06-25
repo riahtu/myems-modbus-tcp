@@ -15,7 +15,7 @@ myems_historical_db = {
 
 period_in_seconds = 60
 
-# get the gateway info from MyEMS Admin Panel and update the 'id' and 'token'
+# Get the gateway info from MyEMS Admin Panel and update the 'id' and 'token'
 gateway = {
     'id': 1,
     'token': '983427af-1c35-42ba-8b4d-288675550225'
